@@ -1,0 +1,406 @@
+#include <iostream>
+#include "gurls++/gurls.h"
+#include "gurls++/exceptions.h"
+#include "gurls++/gmat2d.h"
+#include "gurls++/options.h"
+#include "gurls++/optlist.h"
+
+#include "gurls++/gmath.h"
+
+
+using namespace gurls;
+using namespace std;
+
+typedef double T; ///< Data type of the matrices elements
+
+/**
+  * Main function
+  */
+int main(int argc, char *argv[])
+{
+    string xtr_file, xte_file, ytr_file, yte_file;
+
+    // check that all inputs are given
+    if(argc<4)
+    {
+        std::cout << "========================================================================================"<< std::endl
+        << " Wrong parameters number ("<<argc <<")." << std::endl
+        << " Provide a valid path for training, test and output files using the following syntax:" << std::endl
+        << " \n\n\t " << argv[0] << " xtr xte ytr yte" << std::endl
+        << " example of usage ../../Data_Sets/ICUB_DATASETS/Xtr.txt ../../Data_Sets/ICUB_DATASETS/Xte.txt ../../Data_Sets/ICUB_DATASETS/ytr.txt ../../Data_Sets/ICUB_DATASETS/yte.txt" << std::endl
+        << "========================================================================================" << std::endl << std::endl;
+        return 0;
+    }
+
+    // get file names from input
+    xtr_file = argv[1];
+    xte_file = argv[2];
+    ytr_file = argv[3];
+    yte_file = argv[4];
+
+    try
+    {
+        gMat2D<T> Xtr, Xte, ytr, yte;
+
+        // load data from file
+        Xtr.readCSV(xtr_file);
+        Xte.readCSV(xte_file);
+        ytr.readCSV(ytr_file);
+        yte.readCSV(yte_file);
+	
+	std::string operation0, operation1,operation2,operation3,operation4,operation5,operation6;
+	int choice;
+	int option1,option2,option3,option4,option5,option6,option7;
+	std::string ig,co,cns,lo;
+	
+	//OptNumber.getValue("nholdouts") = 0.4;
+	std::cout << "========================================================================================"<< std::endl
+        << " Enter choice for regression to be done : " << std::endl
+        << " 1 --> Linear regression" << std::endl
+        << " 2 --> Using Gaussian kernel" << std::endl
+        << " Default --> Any key" << std::endl
+        << "========================================================================================" << std::endl << std::endl;
+	std::cin >> choice;
+	if (choice == 1)
+	{
+	std::cout << " You are using Linear Regression " << std::endl << std::endl;
+	std::cout << "=====================================================" <<std::endl <<std::endl;
+	std::cout << " You are using split:ho " << std::endl;
+	operation0 = "split:ho";
+	
+	std::cout << "========================================================================================"<< std::endl
+        << " Enter option to be done for parameter selection : " << std::endl
+        << " 1 --> paramsel:fixlambda" << std::endl
+        << " 2 --> paramsel:siglam" << std::endl
+        << " 3 --> paramsel:siglamho" << std::endl
+        << " 4 --> paramsel:loocvprimal" << std::endl
+        << " 5 --> paramsel:loocvdual" << std::endl
+        << " Default --> Any key (paramsel:loocvprimal) " << std::endl
+        << "========================================================================================" << std::endl << std::endl;
+	std::cin >> option1;
+	switch (option1)
+	{
+	  case 1 :
+	    operation1 = "paramsel:fixlambda";
+	    std::cout << " you specified parameter as fixlambda " <<std::endl;
+	    break;
+	  case 2 :
+	    operation1 = "paramsel:siglam";
+	    std::cout << " you specified parameter as siglam " <<std::endl;
+	    break;
+	  case 3 :
+	    operation1 = "paramsel:siglamho";
+	    std::cout << " you specified parameter as siglamho " <<std::endl;
+	    break;
+	  case 4 :
+	    operation1 = "paramsel:loocvprimal";
+	    std::cout << " you specified parameter as loocvprimal " <<std::endl;
+	    break;
+	  case 5 :
+	    operation1 = "paramsel:loocvdual";
+	    std::cout << " you specified parameter as loocvdual " <<std::endl;
+	    break;
+	  default :
+	    operation1 = "paramsel:hoprimal";
+	    std::cout << " defaults parameter is loocvprimal " <<std::endl;
+	    break;
+	} 
+	std::cout << "========================================================================================"<< std::endl
+        << " Enter option to be done for optimizer: " << std::endl
+        << " 1 --> optimizer:rlsprimal" << std::endl
+        << " 2 --> optimizer:rlsdual" << std::endl
+        << " Default --> Any key (optimizer:rlsauto) " << std::endl
+        << "========================================================================================" << std::endl << std::endl;
+	std::cin >> option2;
+	switch (option2)
+	{
+	  case 1 :
+	    operation2 = "optimizer:rlsprimal";
+	    std::cout << " you specified optimizer as rlsprimal " <<std::endl;
+	    break;
+	  case 2 :
+	    operation2 = "optimizer:rlsdual";
+	    std::cout << " you specified optimizer as rlsdual " <<std::endl;
+	    break;
+	  default :
+	    operation2 = "optimizer:rlsauto";
+	    std::cout << " default optimizer is rlsauto " <<std::endl;
+	    break;
+	} 
+	std::cout << "========================================================================================"<< std::endl
+        << " Enter option to be done for predicting labels: " << std::endl
+        << " 1 --> pred:primal" << std::endl
+        << " 2 --> pred:dual" << std::endl
+        << " Default --> Any key (pred:primal) " << std::endl
+        << "========================================================================================" << std::endl << std::endl;
+	std::cin >> option3;
+	switch (option3)
+	{
+	  case 1 :
+	    operation3 = "pred:primal";
+	    std::cout << " you specified prediction as primal " <<std::endl;
+	    break;
+	  case 2 :
+	    operation3 = "pred:dual";
+	    std::cout << " you specified prediction as dual " <<std::endl;
+	    break;
+	  default :
+	    operation3 = "pred:primal";
+	    std::cout << " default prediction is primal " <<std::endl;
+	    break;
+	} 
+	std::cout << "========================================================================================"<< std::endl
+        << " Enter option to be done for prediction performance: " << std::endl
+        << " 1 --> pref:rmse" << std::endl
+        << " 2 --> pref:prerec" << std::endl
+        << " Default --> Any key (pref:macroavg) " << std::endl
+        << " *****Caustion : Use rmse by default it computeNsave other prerec & macroavg*****" <<std::endl
+        << "========================================================================================" << std::endl << std::endl;
+	std::cin >> option4;
+	switch (option4)
+	{
+	  case 1 :
+	    operation4 = "perf:rmse";
+	    std::cout << " specified performance measure as rmse " <<std::endl;
+	    break;
+	  case 2 :
+	    operation4 = "perf:prerec";
+	    std::cout << " specified performance measure as prerec average " <<std::endl;
+	    break;
+	  default :
+	    operation4 = "perf:macroavg";
+	    std::cout << " default performance measure is macroavg " <<std::endl;
+	    break;
+	} 
+	operation5 = "perf:macroavg";
+	operation6 = "perf:prerec";
+	}
+	else if(choice == 2) 
+	{
+	std::cout << " You are using Gaussian kernel " << std::endl << std::endl;
+	std::cout << "============================================="<<std::endl <<std::endl;
+	std::cout << " You are using split:ho " << std::endl;
+	operation0 = "split:ho";
+	std::cout << "========================================================================================"<< std::endl
+        << " Enter option to be done for parameter selection : " << std::endl
+        << " 1 --> paramsel:fixlambda" << std::endl
+        << " 2 --> paramsel:siglam" << std::endl
+        << " 3 --> paramsel:siglamho" << std::endl
+        << " 4 --> paramsel:loocvprimal" << std::endl
+        << " 5 --> paramsel:loocvdual" << std::endl
+        << " Default --> Any key (paramsel:loocvprimal) " << std::endl
+        << "========================================================================================" << std::endl << std::endl;
+	std::cin >> option1;
+	switch (option1)
+	{
+	  case 1 :
+	    operation1 = "paramsel:fixlambda";
+	    std::cout << " you specified parameter as fixlambda " <<std::endl;
+	    break;
+	  case 2 :
+	    operation1 = "paramsel:siglam";
+	    std::cout << " you specified parameter as siglam " <<std::endl;
+	    break;
+	  case 3 :
+	    operation1 = "paramsel:siglamho";
+	    std::cout << " you specified parameter as siglamho " <<std::endl;
+	    break;
+	  case 4 :
+	    operation1 = "paramsel:loocvprimal";
+	    std::cout << " you specified parameter as loocvprimal " <<std::endl;
+	    break;
+	  case 5 :
+	    operation1 = "paramsel:loocvdual";
+	    std::cout << " you specified parameter as loocvdual " <<std::endl;
+	    break;
+	  default :
+	    operation1 = "paramsel:hoprimal";
+	    std::cout << " defaults parameter is loocvprimal " <<std::endl;
+	    break;
+	}
+	std::cout << "========================================================================================"<< std::endl
+        << " Enter option to be done for kernel: " << std::endl
+        << " 1 --> kernel:rbf" << std::endl
+        << " 2 --> kernel:chisquaredkernel" << std::endl
+        << " Default --> Any key (kernel:linear) " << std::endl
+        << "========================================================================================" << std::endl << std::endl;
+	std::cin >> option2;
+	switch (option2)
+	{
+	  case 1 :
+	    operation2 = "kernel:rbf";
+	    std::cout << " you specified kernel as rbf " <<std::endl;
+	    break;
+	  case 2 :
+	    operation2 = "kernel:chisquaredkernel";
+	    std::cout << " you specified kernel as chisquaredkernel " <<std::endl;
+	    break;
+	  default :
+	    operation2 = "kernel:linear";
+	    std::cout << " default kernel is linear " <<std::endl;
+	    break;
+	} 
+	std::cout << "========================================================================================"<< std::endl
+        << " Enter option to be done for optimizer: " << std::endl
+        << " 1 --> optimizer:rlsprimal" << std::endl
+        << " 2 --> optimizer:rlsdual" << std::endl
+        << " Default --> Any key (optimizer:rlsauto) " << std::endl
+        << "========================================================================================" << std::endl << std::endl;
+	std::cin >> option3;
+	switch (option3)
+	{
+	  case 1 :
+	    operation3 = "optimizer:rlsprimal";
+	    std::cout << " you specified optimizer as rlsprimal " <<std::endl;
+	    break;
+	  case 2 :
+	    operation3 = "optimizer:rlsdual";
+	    std::cout << " you specified optimizer as rlsdual " <<std::endl;
+	    break;
+	  default :
+	    operation3 = "optimizer:rlsauto";
+	    std::cout << " default optimizer is rlsauto " <<std::endl;
+	    break;
+	} 
+	
+	std::cout << "======================================" << std::endl;
+	std::cout << " You are using traintest for predkernel" <<std::endl <<std::endl;
+	operation4 = "predkernel:traintest";
+	std::cout << "========================================================================================"<< std::endl
+        << " Enter option to be done for predicting labels: " << std::endl
+        << " 1 --> pred:primal" << std::endl
+        << " 2 --> pred:dual" << std::endl
+        << " Default --> Any key (pred:primal) " << std::endl
+        << "========================================================================================" << std::endl << std::endl;
+	std::cin >> option5;
+	switch (option5)
+	{
+	  case 1 :
+	    operation5 = "pred:primal";
+	    std::cout << " you specified prediction as primal " <<std::endl;
+	    break;
+	  case 2 :
+	    operation5 = "pred:dual";
+	    std::cout << " you specified prediction as dual " <<std::endl;
+	    break;
+	  default :
+	    operation5 = "pred:primal";
+	    std::cout << " default prediction is primal " <<std::endl;
+	    break;
+	} 
+	std::cout << "========================================================================================"<< std::endl
+        << " Enter option to be done for prediction performance: " << std::endl
+        << " 1 --> perf:rmse" << std::endl
+        << " 2 --> perf:prerec" << std::endl
+        << " Default --> Any key (perf:macroavg) " << std::endl
+        << "========================================================================================" << std::endl << std::endl;
+	std::cin >> option6;
+	switch (option6)
+	{
+	  case 1 :
+	    operation6 = "perf:rmse";
+	    std::cout << " specified performance measure as rmse " <<std::endl;
+	    break;
+	  case 2 :
+	    operation6 = "perf:prerec";
+	    std::cout << " specified performance measure as prerec average " <<std::endl;
+	    break;
+	  default :
+	    operation6 = "perf:macroavg";
+	    std::cout << " default performance measure is macroavg " <<std::endl;
+	    break;
+	} 
+	
+	}
+	
+	else {
+	  std::cout << " You are using Default(Linear with default sequence) " << std::endl;
+	  operation0 = "split:ho";
+	  operation1 = "paramsel:loocvprimal";
+	  operation2 = "optimizer:rlsprimal";
+	  operation3 = "pred:primal";
+	  operation4 = "perf:rmse";
+	  //operation5 = "perf:macroavg";
+	  //operation6 = "perf:prerec";
+	  
+	}
+	
+	
+        // specify the task sequence
+        OptTaskSequence *seq = new OptTaskSequence();
+        *seq << operation0 << operation1 << operation2 << operation3 << operation4; // << operation5 << operation6;
+	std::cout << "========================================" << std::endl;
+	std::cout << "Specified Task Sequence :" << std::endl;
+	std::cout << *seq << std::endl; 
+
+
+        GurlsOptionsList * process = new GurlsOptionsList("processes", false);
+	
+
+        // defines instructions for training process
+        OptProcess* process1 = new OptProcess();
+	if (choice==2)
+	*process1 << GURLS::computeNsave << GURLS::computeNsave <<GURLS::computeNsave <<GURLS::computeNsave << GURLS::ignore << GURLS::ignore << GURLS::ignore;
+        else
+	*process1 << GURLS::computeNsave << GURLS::computeNsave <<GURLS::computeNsave <<GURLS::ignore << GURLS::ignore; // << GURLS::ignore << GURLS::ignore;  
+	process->addOpt("one", process1);
+
+        // defines instructions for testing process
+        OptProcess* process2 = new OptProcess();
+	if (choice==2)
+        *process2 << GURLS::load << GURLS::load << GURLS::load <<GURLS::load << GURLS::computeNsave << GURLS::computeNsave << GURLS::computeNsave;
+	else
+	*process2 << GURLS::load << GURLS::load << GURLS::load <<GURLS::computeNsave << GURLS::computeNsave; //<< GURLS::computeNsave << GURLS::ignore;  
+        process->addOpt("two", process2);
+
+        // build an options' structure
+        GurlsOptionsList* opt = new GurlsOptionsList("Non_Parametric_Modelling_Batch", true);
+        opt->addOpt("seq", seq);
+        opt->addOpt("processes", process);
+
+        GURLS G;
+
+        string jobId0("one");
+        string jobId1("two");
+
+        // run gurls for training
+        G.run(Xtr, ytr, *opt, jobId0);
+	//* seq << "perf:rmse";
+	//* process2 << GURLS::computeNsave;
+
+        // run gurls for testing
+        G.run(Xte, yte, *opt, jobId1);
+	//GurlsOption *GurlsOptionsList.getOpt("perf");
+	// this is the thing i have to already i run the code it is working fine but i want to access particular thing in that example perf 
+	// author said me to use GurlsOption* GurlsOptionsList::getOpt (std::string key) method.
+	// i tried like this see Gurlsoptionlist filename it is throwing me error. Got it
+	
+	// Yeah I got it it should be something like this:
+	GurlsOption * perf_opt = opt->getOpt("perf");
+	std::cout<<perf_opt <<std::endl;
+	
+	
+	
+	// you go on ok I have no idea abthe things that you want to get but it seems to me that they have a "name" which is given by a string
+	
+	// and you can do as he told you ## You should have something of GurlsOption isntantiated 
+	
+	//GurlsOption * the_option_you_want;
+	
+	//the_option_you_want = opt->getOpt("name_of_option"); // something like this. Your tell me
+	
+	
+	
+	
+	//rmse_save_to_csv(*opt, "path/filename.csv");
+
+    }
+    catch (gException& e)
+    {
+        std::cout << e.getMessage() << endl;
+        return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
+
+}
