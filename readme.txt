@@ -1,3 +1,5 @@
+The objective is to estimate the forces and torques using machine learning algorithms for both linear and non-linear models.
+
 Package includes both matlab and c++ codes for Non-parametric modeling using GURLS. However first you need to install GURLS package with necessary dependencies from https://github.com/LCSL/GURLS. More detail information can be found on GURLS manual.
 
 Detail explaination of Non-parametric modeling and theory behind this can be found from my thesis which is included in the package. 
